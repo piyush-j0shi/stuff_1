@@ -1,0 +1,12 @@
+[
+  {"id" : "piyush", "name" : "piyush", "title" : "Head of Engineering", "email" : "", "slack_user_id" : "U0C8J6C4NGZ"},
+  {"id" : "foo", "name" : "foo", "title" : "Engineering Manager", "email" : "foo@boiledpotatos.test", "slack_user_id" : null},
+  {"id" : "bar", "name" : "bar", "title" : "Product Manager, Payments", "email" : "bar@boiledpotatos.test", "slack_user_id" : null},
+  {"id" : "baz", "name" : "baz", "title" : "Tech Lead, Payments", "email" : "baz@boiledpotatos.test", "slack_user_id" : null},
+  {"id" : "john", "name" : "john", "title" : "Senior Mobile Engineer", "email" : "john@boiledpotatos.test", "slack_user_id" : null},
+  {"id" : "jane", "name" : "jane", "title" : "Mobile Engineer", "email" : "jane@boiledpotatos.test", "slack_user_id" : null},
+  {"id" : "alice", "name" : "alice", "title" : "QA Lead", "email" : "alice@boiledpotatos.test", "slack_user_id" : null},
+  {"id" : "bob", "name" : "bob", "title" : "Data Engineering Lead", "email" : "bob@boiledpotatos.test", "slack_user_id" : null},
+  {"id" : "carol", "name" : "carol", "title" : "Product Designer", "email" : "carol@boiledpotatos.test", "slack_user_id" : null},
+  {"id" : "dave", "name" : "dave", "title" : "DevOps / SRE", "email" : "dave@boiledpotatos.test", "slack_user_id" : null}
+]

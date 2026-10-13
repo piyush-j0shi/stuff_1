@@ -1,0 +1,22 @@
+[
+  {"feature" : "Portfolio View", "question" : "How healthy is each project right now?", "expect" : [["pay"], ["mob"], ["data"], ["green"], ["red"], ["kyc", "paywave", "pay-7"]]},
+  {"feature" : "Blocker Finder", "question" : "Why are we still waiting on PayWave production keys and what does it block?", "expect" : [["kyc"], ["pay-7"], ["pay-8"], ["pay-13"]]},
+  {"feature" : "Blocker Finder", "question" : "What is blocking the mobile app right now?", "expect" : [["mob-13"], ["mob-7"], ["design", "v3", "carol"]]},
+  {"feature" : "Workload Balancer", "question" : "Who is overloaded on the team and how could we rebalance?", "expect" : [["john"], ["baz"], ["34"]]},
+  {"feature" : "Ask Anything", "question" : "What is john working on and is anything overdue?", "expect" : [["mob-7"], ["pay-13"], ["overdue"]]},
+  {"feature" : "Meeting Recap", "question" : "Give me a recap of #grp-payments-squad from last week (Oct 5 to Oct 11).", "expect" : [["pay-7", "kyc", "keys"], ["pay-9", "signature", "refund"]]},
+  {"feature" : "Discussion Insights", "question" : "What did leadership decide about the Checkout v2 release date?", "expect" : [["split", "phase"], ["oct 23", "october 23", "10-23"], ["nov 6", "november 6", "11-06"]]},
+  {"feature" : "Risk Alerts", "question" : "Why did warehouse costs go up and what is being done about it?", "expect" : [["data-12"], ["18%"], ["autoscal", "parallel"]]},
+  {"feature" : "Sprint Status", "question" : "How is PAY Sprint 14 going?", "expect" : [["sprint 14"], ["43"], ["3 ", "7%"], ["oct 16", "4 days", "16"]]},
+  {"feature" : "Ask Anything", "question" : "What is the status of the Android 15 login crash?", "expect" : [["mob-7"], ["in review", "review"], ["john"]]},
+  {"feature" : "Generic", "question" : "who is working on what?", "expect" : [["john"], ["baz"], ["alice"], ["mob-"], ["pay-"]]},
+  {"feature" : "Generic", "question" : "what should we do to get this done? https://piyushdatamonk-1791783856352.atlassian.net/browse/MOB-13", "expect" : [["mob-13"], ["carol"], ["suggest", "next step", "should"]]},
+  {"feature" : "Generic", "question" : "how are we doing?", "expect" : [["pay"], ["mob"], ["data"], ["31", "red"]]},
+  {"feature" : "Generic", "channel" : "grp-payments-squad", "question" : "what are the important things for this friday?", "expect" : [["oct 16", "friday"], ["pay-"]]},
+  {"feature" : "Generic", "channel" : "grp-payments-squad", "thread_ts" : "1791791532.539189", "question" : "summarize this thread", "expect" : [["webhook"], ["token"]]},
+  {"feature" : "Generic", "question" : "can you summarize this https://boiledpotatos.slack.com/archives/C0C81N9DGUX/p1791791532539189", "expect" : [["webhook"], ["token"]]},
+  {"feature" : "Generic", "question" : "anything I should be worried about?", "expect" : [["pay-7", "kyc", "keys"]]},
+  {"feature" : "Generic", "question" : "draft a short message to bar asking for an update on the paywave keys", "expect" : [["bar"], ["kyc", "keys"]]},
+  {"feature" : "Generic", "channel" : "grp-mobile-squad", "question" : "what did we discuss here last week?", "expect" : [["mob-"], ["android", "crash", "onboarding", "design"]]},
+  {"feature" : "Generic", "question" : "compare how mobile and payments are doing this sprint", "expect" : [["mob"], ["pay"], ["%", "points"]]}
+]

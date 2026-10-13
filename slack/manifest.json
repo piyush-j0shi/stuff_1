@@ -1,0 +1,83 @@
+{
+  "display_information": {
+    "name": "Jeera Bot",
+    "description": "Project insights from Jira and Slack"
+  },
+  "features": {
+    "app_home": {
+      "home_tab_enabled": false,
+      "messages_tab_enabled": true,
+      "messages_tab_read_only_enabled": false
+    },
+    "bot_user": {
+      "display_name": "jeera",
+      "always_online": true
+    },
+    "slash_commands": [
+      {
+        "command": "/health",
+        "description": "Project health scores",
+        "should_escape": false
+      },
+      {
+        "command": "/daily-report",
+        "description": "Post today's report",
+        "should_escape": false
+      }
+    ]
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "app_mentions:read",
+        "chat:write",
+        "chat:write.customize",
+        "chat:write.public",
+        "channels:history",
+        "channels:read",
+        "channels:manage",
+        "channels:join",
+        "groups:history",
+        "groups:read",
+        "users:read",
+        "users:read.email",
+        "commands",
+        "im:history",
+        "groups:write",
+        "im:write",
+        "im:read",
+        "mpim:write",
+        "mpim:read",
+        "mpim:history"
+      ],
+      "user": [
+        "chat:write",
+        "channels:read",
+        "channels:history",
+        "groups:read",
+        "groups:history",
+        "im:read",
+        "im:history",
+        "mpim:read",
+        "mpim:history",
+        "users:read"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "bot_events": [
+        "app_mention",
+        "message.im",
+        "message.channels",
+        "message.groups"
+      ]
+    },
+    "interactivity": {
+      "is_enabled": true
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": true,
+    "token_rotation_enabled": false
+  }
+}
