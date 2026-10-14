@@ -23,6 +23,13 @@ def post(path, body):
     return r.json()
 
 
+def call(method, path, body=None):
+    # writes, some of them answer with an empty body
+    r = session.request(method, config.jira_base_url + path, json=body, timeout=60)
+    r.raise_for_status()
+    return r.json() if r.content else {}
+
+
 def field_ids():
     # custom field ids differ per jira site, so look them up by name
     names = {"Sprint" : "sprint", "Flagged" : "flagged", "Story point estimate" : "points", "Story Points" : "points", "Start date" : "start"}

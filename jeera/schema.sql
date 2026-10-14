@@ -142,3 +142,17 @@ create table if not exists bot_threads (
     created timestamptz default now(),
     primary key (channel_id, thread_ts)
 );
+
+create table if not exists pending_changes (
+    thread_id text primary key,
+    channel_id text,
+    thread_ts text,
+    card_ts text,
+    asker text,
+    asker_slack text,
+    place jsonb,
+    status text default 'waiting',
+    decided_by text,
+    created timestamptz default now(),
+    decided timestamptz
+);

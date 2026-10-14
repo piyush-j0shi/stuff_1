@@ -4,11 +4,12 @@ import re
 import threading
 import time
 
+from psycopg.types.json import Jsonb
 from slack_bolt import App
 
 from jeera import config, db, health, live, reports
 from jeera.agent import loop
-from jeera.ingest import slack_sync
+from jeera.ingest import jira_sync, slack_sync
 
 log = logging.getLogger("jeera")
 # socket mode needs no signing secret
@@ -116,7 +117,10 @@ def answer(event, client, is_dm=False):
     where = {"channel_id" : channel, "thread_ts" : event.get("thread_ts"), "is_dm" : is_dm}
     out = loop.run(question, history=history, asker=asker, where=where)
     try:
-        send(client, channel, placeholder["ts"], thread_ts, out["answer"] or "I could not find an answer.")
+        if out["pending"]:
+            ask_approval(client, channel, placeholder["ts"], thread_ts, out, asker, event.get("user"), where)
+        else:
+            send(client, channel, placeholder["ts"], thread_ts, out["answer"] or "I could not find an answer.")
     except Exception as e:
         log.exception("posting answer failed")
         client.chat_update(channel=channel, ts=placeholder["ts"], text=f"Sorry, I could not post the answer ({e}).")
@@ -124,6 +128,79 @@ def answer(event, client, is_dm=False):
         with db.connect() as conn:
             conn.execute("insert into bot_threads (channel_id, thread_ts) values (%s, %s) on conflict do nothing", (channel, thread_ts))
     log.info("answered in %ss with %s", out["seconds"], [t["tool"] for t in out["tools"]])
+
+
+def changes_text(pending):
+    lines = "\n".join(f"• {a['text']}" for a in pending)
+    what = "this change" if len(pending) == 1 else f"these {len(pending)} changes"
+    return f"*I'd like to make {what} in Jira:*\n{lines}"[:2900]
+
+
+def ask_approval(client, channel, card_ts, thread_ts, out, asker, asker_slack, where):
+    # the paused run becomes a card, only the person who asked can approve it
+    blocks = [{"type" : "section", "text" : {"type" : "mrkdwn", "text" : out["answer"][:2900]}}] if out["answer"] else []
+    blocks += [{"type" : "section", "text" : {"type" : "mrkdwn", "text" : changes_text(out["pending"])}},
+               {"type" : "actions", "elements" : [
+                   {"type" : "button", "text" : {"type" : "plain_text", "text" : "Approve"}, "style" : "primary", "action_id" : "jira_approve", "value" : out["thread"]},
+                   {"type" : "button", "text" : {"type" : "plain_text", "text" : "Cancel"}, "style" : "danger", "action_id" : "jira_cancel", "value" : out["thread"]}]},
+               {"type" : "context", "elements" : [{"type" : "mrkdwn", "text" : f"Only <@{asker_slack}> can approve. Nothing changes in Jira until then."}]}]
+    client.chat_update(channel=channel, ts=card_ts, text="A Jira change is waiting for approval", blocks=blocks)
+    with db.connect() as conn:
+        conn.execute("""insert into pending_changes (thread_id, channel_id, thread_ts, card_ts, asker, asker_slack, place)
+            values (%s, %s, %s, %s, %s, %s, %s) on conflict (thread_id) do update set card_ts = excluded.card_ts, status = 'waiting',
+            decided_by = null, decided = null""", (out["thread"], channel, thread_ts, card_ts, asker, asker_slack, Jsonb(where)))
+
+
+def refresh_jira():
+    # pick up the change now instead of at the next 15 minute sync
+    try:
+        jira_sync.sync()
+        pending.set()
+    except Exception:
+        log.exception("jira refresh after a change failed")
+
+
+def decide(body, client, approved):
+    thread, user, channel = body["actions"][0]["value"], body["user"]["id"], body["channel"]["id"]
+    with db.connect() as conn:
+        row = conn.execute("select * from pending_changes where thread_id = %s", (thread,)).fetchone()
+    if not row or row["status"] != "waiting":
+        client.chat_postEphemeral(channel=channel, user=user, text="This change was already handled.")
+        return
+    if user != row["asker_slack"]:
+        client.chat_postEphemeral(channel=channel, user=user, text=f"Only <@{row['asker_slack']}> can approve or cancel this change.")
+        return
+    with db.connect() as conn:
+        # a double click must not run the change twice
+        claimed = conn.execute("""update pending_changes set status = %s, decided_by = %s, decided = now()
+            where thread_id = %s and status = 'waiting' returning thread_id""", ("approved" if approved else "cancelled", user, thread)).fetchone()
+    if not claimed:
+        return
+    verdict = f":white_check_mark: Approved by <@{user}>" if approved else f":x: Cancelled by <@{user}>, nothing was changed"
+    client.chat_update(channel=channel, ts=row["card_ts"], text=verdict, blocks=[
+        {"type" : "section", "text" : {"type" : "mrkdwn", "text" : changes_text(loop.waiting(thread))}},
+        {"type" : "context", "elements" : [{"type" : "mrkdwn", "text" : verdict}]}])
+    loader = client.chat_postMessage(channel=channel, thread_ts=row["thread_ts"], text=thinking)
+    log.info("jira change %s by %s", "approved" if approved else "cancelled", user)
+    out = loop.resume(thread, approved, asker=row["asker"], where=row["place"])
+    if out["pending"]:
+        ask_approval(client, channel, loader["ts"], row["thread_ts"], out, row["asker"], row["asker_slack"], row["place"])
+    else:
+        send(client, channel, loader["ts"], row["thread_ts"], out["answer"] or ("Done." if approved else "Cancelled, nothing was changed."))
+    if approved:
+        threading.Thread(target=refresh_jira, daemon=True).start()
+
+
+@app.action("jira_approve")
+def on_approve(ack, body, client):
+    ack()
+    decide(body, client, True)
+
+
+@app.action("jira_cancel")
+def on_cancel(ack, body, client):
+    ack()
+    decide(body, client, False)
 
 
 @app.event("app_mention")
